@@ -76,7 +76,6 @@ bool Board::checkMove(Move *m, Side side) {
 
     int X = m->getX();
     int Y = m->getY();
-
     // Make sure the square hasn't already been taken.
     if (occupied(X, Y)) return false;
 

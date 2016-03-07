@@ -1,7 +1,7 @@
 CC          = g++
-CFLAGS      = -Wall -ansi -pedantic -ggdb
+CFLAGS      = -Wall -ansi -pedantic -g -ggdb
 OBJS        = player.o board.o
-PLAYERNAME  = player
+PLAYERNAME  = shakespeare
 
 all: $(PLAYERNAME) testgame
 	
