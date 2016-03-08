@@ -16,10 +16,17 @@ private:
 
 public:
     Player(Side side);
+    Player(Side side, Board* start_board);
     ~Player();
 	void update_player();
-	void update_board(Move* move);
-	std::vector<Move*> get_valid_moves();    
+	bool in_corner(Move *move);
+	bool on_edge(Move *move);
+	bool iscornervalid(Move *move, Board *b, Side side);
+	int score_move(Board *b, Move *move, Side side_to_score);
+	Move *greedy_heuristic(vector<Move*> valid_moves);	
+	Move* minimax(vector<Move*> valid_moves);
+	void update_board(Move* move, Side side);
+	std::vector<Move*> get_valid_moves(Board *b, Side side);    
     Move *doMove(Move *opponentsMove, int msLeft);
 
     // Flag to tell if the player is running within the test_minimax context

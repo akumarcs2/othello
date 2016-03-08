@@ -21,7 +21,7 @@ public:
     Board();
     ~Board();
     Board *copy();
-        
+    void draw();
     bool isDone();
     bool hasMoves(Side side);
     bool checkMove(Move *m, Side side);
@@ -31,6 +31,7 @@ public:
     int countWhite();
 
     void setBoard(char data[]);
+    char *getBoard();
 };
 
 #endif

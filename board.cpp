@@ -177,3 +177,64 @@ void Board::setBoard(char data[]) {
         }
     }
 }
+
+/* 
+ * Retrieves the current board state so it can be set later using setBoard
+ */
+char *Board::getBoard()
+{
+    char *data = new char[64];
+    for(int x = 0; x < 8; x++)
+    {
+        for(int y = 0; y < 8; y++)
+        {
+            if(taken[x + 8*y])
+            {
+                if(black[x + 8*y])
+                {
+                    data[x + 8*y] = 'b';
+                }
+                else
+                {
+                    data[x + 8*y] = 'w';
+                }
+            }
+            else
+            {
+                data[x + 8*y] = 'x'; 
+            }
+        }
+    }
+
+    return data;
+} 
+
+/*
+ * Draws the current state of the board out for debugging purposes
+ */
+void Board::draw()
+{
+    for(int x = 0; x < 8; x++)
+    {
+        for(int y = 0; y < 8; y++)
+        {
+            if(taken[y + x*8])
+            {
+                if(black[y + x*8])
+                {
+                    std::cerr << " B ";
+                }
+                else
+                {
+                    std::cerr << " W ";
+                }
+            }
+            else
+            {
+                std::cerr << " * ";
+            }
+        }
+
+        std::cerr << std::endl;
+    }
+}
