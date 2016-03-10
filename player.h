@@ -22,7 +22,7 @@ public:
 	bool in_corner(Move *move);
 	bool on_edge(Move *move);
 	bool iscornervalid(Move *move, Board *b, Side side);
-	int score_move(Board *b, Move *move, Side side_to_score);
+	int score_move(Board *b, Move *move, Side side_to_score, bool downweight);
 	Move *greedy_heuristic(vector<Move*> valid_moves);	
 	Move* minimax(vector<Move*> valid_moves);
 	void update_board(Move* move, Side side);

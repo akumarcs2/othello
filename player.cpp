@@ -146,7 +146,7 @@ bool Player::iscornervalid(Move *move, Board *b, Side side)
 }
 
 // Associate a score with the board state that results if we play move
-int Player::score_move(Board *b, Move* move, Side side_to_score)//, Side side_to_score)
+int Player::score_move(Board *b, Move* move, Side side_to_score, bool downweight)//, Side side_to_score)
 {
     
     // Determine whether the corners are valid moves:
@@ -159,24 +159,40 @@ int Player::score_move(Board *b, Move* move, Side side_to_score)//, Side side_to
 
     // Associate the score as the difference between the number of your pieces
     // and your opponent's pieces: 
-    int score = b->countBlack() - b->countWhite();
+    int count_score = b->count(side_to_score);
 
-    if(side_to_score == WHITE)
+    // Also keep track of mobility: 
+
+    int mobility_score = b->countMoves(side_to_score);
+    if(!downweight)
     {
-        score *= -1;
+        mobility_score *= -1;
     }
 
-    
-    
-    // If the move is in the corner, upweight it by a factor of three:
-    if(in_corner(move))
+    // Weight the two respective score
+    int score = 0.4 * count_score + 0.6 * mobility_score;
+
+    if(downweight)    
     {
-        score *= 3;
+        if(in_corner(move))
+        {
+            score *= -3;
+        }
+    //    else if(on_edge(move))
+    //    {
+    //        score *= -1.5;
+    //    }
     }
-    else if(on_edge(move))
+    else
     {
-        // If it is on an edge, double the score:
-        score *= 1.5;
+        if(in_corner(move))
+        {
+            score *= 3;
+        }
+    //    else if(on_edge(move))
+    //    {
+    //        score *= 1.5;
+    //    }
     }
     /*
     else if(!(corner_valid_before) && corner_valid_after)
@@ -201,7 +217,7 @@ Move* Player::greedy_heuristic(vector<Move*> valid_moves)
 
     test_board->doMove(valid_moves[0], pside);
 
-    int max_score = score_move(test_board, valid_moves[0], pside);
+    int max_score = score_move(test_board, valid_moves[0], pside, false);
     std::cerr << "Move score: " << max_score << std::endl;
     int max_ind = 0;
 
@@ -213,7 +229,7 @@ Move* Player::greedy_heuristic(vector<Move*> valid_moves)
         // Make the next move:
         test_board->doMove(valid_moves[i], pside);
 
-        int move_score = score_move(test_board, valid_moves[i], pside);
+        int move_score = score_move(test_board, valid_moves[i], pside, false);
 
         std::cerr << "Move score: " << move_score << std::endl;
         if(move_score > max_score)
@@ -269,7 +285,7 @@ Move* Player::minimax(vector<Move*> valid_moves)
             // Make the move as the other player:
             test_board->doMove(test_moves[0], oside);
 
-            min_end_score[i] = score_move(test_board, test_moves[0], pside);
+            min_end_score[i] = score_move(test_board, test_moves[0], pside, true);
 
             for(int j = 1; j < (int)test_moves.size(); j++)
             {
@@ -280,7 +296,7 @@ Move* Player::minimax(vector<Move*> valid_moves)
 
                 //test_board->draw();
 
-                end_score = score_move(test_board, test_moves[j], pside);
+                end_score = score_move(test_board, test_moves[j], pside, true);
 
                 if(end_score < min_end_score[i])
                 {
@@ -293,7 +309,8 @@ Move* Player::minimax(vector<Move*> valid_moves)
         }
         else
         {
-            return valid_moves[i];
+            // This means the opponent will have to pass:
+            min_end_score[i] = score_move(test_board, valid_moves[i], pside, false);
         }
 
     }

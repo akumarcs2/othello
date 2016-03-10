@@ -29,6 +29,7 @@ public:
     int count(Side side);
     int countBlack();
     int countWhite();
+    int countMoves(Side side);
 
     void setBoard(char data[]);
     char *getBoard();
