@@ -20,6 +20,18 @@ public:
 
     void setX(int x) { this->x = x; }
     void setY(int y) { this->y = y; }
+
+    bool operator==(Move& move) {
+        if(move.getX() == this->x && move.getY() == this->y)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
 };
 
 #endif

@@ -1,5 +1,5 @@
 CC          = g++
-CFLAGS      = -Wall -ansi -pedantic -g -ggdb
+CFLAGS      = -Wall -ansi -pedantic -O2
 OBJS        = player.o board.o
 PLAYERNAME  = shakespeare
 

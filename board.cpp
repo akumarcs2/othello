@@ -256,3 +256,71 @@ void Board::draw()
         std::cerr << std::endl;
     }
 }
+
+// For the side given by input argument side, count the number of unoccupied,
+// so called "fronteir" squares that 
+int Board::countFrontier(Side side)
+{
+    // Keep track of spaces identified as fronteir spaces using a biset:
+    bitset<64> frontier_spaces;
+    for(int x = 0; x < 8; x++)
+    {
+        for(int y = 0; y < 8; y++)
+        {
+            // If side has a token at the space, count how many adjacent
+            // peices: 
+            if(get(side, x, y))
+            {
+                for(int xx = - 1; xx < 2; xx++)
+                {
+                    for(int yy = -1; yy < 2; yy++)
+                    {
+                        if(onBoard(xx, yy) && (!(xx == x && yy == y)))
+                        {
+                            if(!occupied(xx,yy))
+                            {
+                                if(!frontier_spaces[xx + 8*yy])
+                                {
+                                    frontier_spaces.set(xx + 8*yy);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Count how many places we marked:
+    int nspaces = 0; 
+    for(int i = 0; i < 64; i++)
+    {
+        if(frontier_spaces[i])
+        {
+            nspaces++;
+        }
+    }
+
+    return nspaces;
+}
+
+/*
+// Returns true if the board position at (x,y) is adjacent to the reference
+// position at (x0, y0)
+bool Board::is_adjacent(int x, int y, int x0, int y0)
+{
+    // Test location needs to be on the board, first and foremost:
+    if(onBoard(x, y))
+    {
+        
+        if((abs(x - x0) == 1 || abs(y - y0) == 1) && 
+            (abs(x - x0) <= 1 && abs(y - y0) <= 1))
+        {
+            return true;
+        }
+    }
+
+    return false;
+
+}
+*/

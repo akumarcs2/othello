@@ -4,6 +4,7 @@
 #include <bitset>
 #include "common.h"
 #include <iostream>
+#include <vector>
 using namespace std;
 
 class Board {
@@ -30,7 +31,7 @@ public:
     int countBlack();
     int countWhite();
     int countMoves(Side side);
-
+    int countFrontier(Side side);
     void setBoard(char data[]);
     char *getBoard();
 };

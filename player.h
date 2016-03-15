@@ -24,7 +24,8 @@ public:
 	bool iscornervalid(Move *move, Board *b, Side side);
 	int score_move(Board *b, Move *move, Side side_to_score, bool downweight);
 	Move *greedy_heuristic(vector<Move*> valid_moves);	
-	Move* minimax(vector<Move*> valid_moves);
+	int minimax(vector<Move*> valid_moves, Board* board_state, bool call_again);
+	Move* minimax_init(vector<Move*> valid_moves);
 	void update_board(Move* move, Side side);
 	std::vector<Move*> get_valid_moves(Board *b, Side side);    
     Move *doMove(Move *opponentsMove, int msLeft);

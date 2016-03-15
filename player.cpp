@@ -169,8 +169,16 @@ int Player::score_move(Board *b, Move* move, Side side_to_score, bool downweight
         mobility_score *= -1;
     }
 
+    // Fronteir squares:
+    int frontier_score = b->countFrontier(side_to_score);
+    if(!downweight)
+    {
+        frontier_score *= -1;
+    }
+
     // Weight the two respective score
-    int score = 0.4 * count_score + 0.6 * mobility_score;
+    int score = 0.25 * count_score + 0.5 * mobility_score + 
+    0.25 * frontier_score;
 
     if(downweight)    
     {
@@ -243,9 +251,9 @@ Move* Player::greedy_heuristic(vector<Move*> valid_moves)
 
 }
 
-
+/*
 // 2 stage minimax heuristic:
-Move* Player::minimax(vector<Move*> valid_moves)
+Move* Player::minimax2(vector<Move*> valid_moves)
 {
     int nmoves = (int)valid_moves.size();
     // Copy the base board state:
@@ -335,6 +343,199 @@ Move* Player::minimax(vector<Move*> valid_moves)
     //delete base_board2[];
 
 }
+*/
+
+Move* Player::minimax_init(vector<Move*> valid_moves)
+{
+    int nmoves = (int)valid_moves.size();
+    // Copy the base board state: 
+    Board *test_board = board.copy();
+    char *base_board = test_board->getBoard();
+
+    int *min_end_score = new int[nmoves];
+    int end_score;
+
+    Side oside;
+
+    if(pside == BLACK)
+    {
+        oside = WHITE;
+    }
+    else
+    {
+        oside = BLACK;
+    }
+
+    for(int i = 0; i < nmoves; i++)
+    {
+        test_board->doMove(valid_moves[i], pside);
+        vector<Move*> test_moves = get_valid_moves(test_board, oside);
+
+        if(!test_moves.empty())
+        {
+            char *base_board2 = test_board->getBoard();
+            // Make the move as the other player:
+            test_board->doMove(test_moves[0], oside);
+
+            // For additional minimax depth, we now get all valid moves for the player:
+            vector<Move*> valid_moves_after_test = get_valid_moves(test_board, pside);
+            if(!valid_moves_after_test.empty())
+            {
+                min_end_score[i] = minimax(get_valid_moves(test_board, pside), test_board, false);                
+            }
+            else
+            {
+                min_end_score[i] = score_move(test_board, test_moves[0], pside, true);
+            }
+
+            for(int j = 1; j < (int)test_moves.size(); j++)
+            {
+                // Reset the test board:
+                test_board->setBoard(base_board2);
+                // Make the next move:
+                test_board->doMove(test_moves[j], oside);
+
+                //test_board->draw();
+                vector<Move*> valid_moves_after_test = get_valid_moves(test_board, pside);
+                if(!valid_moves_after_test.empty())
+                {
+                    end_score = minimax(get_valid_moves(test_board, pside), test_board, false);
+                }
+                else
+                {
+                    end_score = score_move(test_board, test_moves[i], pside, true);
+                }
+
+                if(end_score < min_end_score[i])
+                {
+                    min_end_score[i] = end_score;
+                }
+            }
+
+            // Reset the test board
+            test_board->setBoard(base_board);
+        }
+        else
+        {
+            // This means the opponent will have to pass:
+            min_end_score[i] = score_move(test_board, valid_moves[i], pside, false);
+        }
+
+    }
+
+    int final_max_score = min_end_score[0];
+    int final_max_ind = 0;
+
+    // Return the valid move that yields the maximum score in the end:
+    for(int i = 1; i < nmoves; i++)
+    {
+        if(min_end_score[i] > final_max_score)
+        {
+            final_max_score = min_end_score[i];
+            final_max_ind = i;
+        }
+    }
+
+    return valid_moves[final_max_ind];
+
+}
+
+int Player::minimax(vector<Move*> valid_moves, Board* board_state, bool call_again)
+{
+    int nmoves = (int)valid_moves.size();
+    // Copy the board state at the current stage of testing:
+    Board *test_board = board_state->copy();
+    char *base_board = test_board->getBoard();
+
+    int *min_end_score = new int[nmoves];
+    int end_score;
+
+    Side oside;
+
+    if(pside == BLACK)
+    {
+        oside = WHITE;
+    }
+    else
+    {
+        oside = BLACK;
+    }
+
+    for(int i = 0; i < nmoves; i++)
+    {
+        // Make the move:
+        test_board->doMove(valid_moves[i], pside);
+        vector<Move*> test_moves = get_valid_moves(test_board, oside);
+        
+        // Need to check if the opponent still has valid moves left:
+        if(!test_moves.empty())
+        {
+            // Now test each of these moves as the other player:
+            
+           char *base_board2 = test_board->getBoard();
+            // Make the move as the other player:
+            test_board->doMove(test_moves[0], oside);
+
+            if(call_again)
+            {
+                min_end_score[i] = minimax(get_valid_moves(test_board, pside), test_board, false);
+            }
+            else
+            {
+                min_end_score[i] = score_move(test_board, test_moves[0], pside, true);
+            }
+
+            for(int j = 1; j < (int)test_moves.size(); j++)
+            {
+                // Reset the test board:
+                test_board->setBoard(base_board2);
+                // Make the next move:
+                test_board->doMove(test_moves[j], oside);
+
+                //test_board->draw();
+                if(call_again)
+                {
+                    end_score = minimax(get_valid_moves(test_board, pside), test_board, false);
+                }
+                else
+                {
+                    end_score = score_move(test_board, test_moves[j], pside, true);
+                }
+
+                if(end_score < min_end_score[i])
+                {
+                    min_end_score[i] = end_score;
+                }
+            }
+
+            // Reset the test board
+            test_board->setBoard(base_board);
+        }
+        else
+        {
+            // This means the opponent will have to pass:
+            min_end_score[i] = score_move(test_board, valid_moves[i], pside, false);
+        }
+
+    }
+
+    int final_max_score = min_end_score[0];
+
+    // Return the valid move that yields the maximum score in the end:
+    for(int i = 1; i < nmoves; i++)
+    {
+        if(min_end_score[i] > final_max_score)
+        {
+            final_max_score = min_end_score[i];
+        }
+    }
+
+    return final_max_score;
+
+    //delete base_board[];
+    //delete base_board2[];
+}
+
 
 /*
  * Compute the next move given the opponent's last move. Your AI is
@@ -387,9 +588,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         
         //Move* move_to_make = greedy_heuristic(valid_moves);
 
-        // 2 stage minmax tree:
+        // 4 stage minmax tree:
         
-        Move *move_to_make = minimax(valid_moves);
+        Move *move_to_make = minimax_init(valid_moves);
 
         // Update board accordingly
         update_board(move_to_make, pside);
